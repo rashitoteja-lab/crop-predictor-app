@@ -49,4 +49,40 @@ with col1:
 
 with col2:
     temperature = st.number_input("Temperature (°C)", 10.0, 50.0, value=25.0)
-    humidity = st.number_input("Humidity (%)", 10.0, 100.0, value_
+    humidity = st.number_input("Humidity (%)", 10.0, 100.0, value=70.0)
+    rainfall = st.number_input("Rainfall (mm)", 20.0, 300.0, value=100.0)
+
+season = st.selectbox("🌦 Current Season", ["Spring", "Summer", "Monsoon", "Autumn", "Winter"])
+
+st.markdown("---")
+
+# Predict button
+if st.button("🔍 Predict Best Crops"):
+
+    # Make prediction
+    features = np.array([[N, P, K, temperature, humidity, ph, rainfall]])
+    prediction = model.predict(features)
+    crop = label_encoder.inverse_transform(prediction)[0]
+
+    # Show top recommendation
+    st.success(f"🌱 **Top Recommended Crop: {crop.capitalize()}**")
+
+    # Season-based suggestions
+    seasonal_crop_map = {
+        "Spring": ["peas", "cabbage", "spinach", "carrot", "onion"],
+        "Summer": ["maize", "millet", "sorghum", "soybean", "cowpea"],
+        "Monsoon": ["rice", "cotton", "groundnut", "bajra", "jute"],
+        "Autumn": ["wheat", "mustard", "barley", "gram", "sugarcane"],
+        "Winter": ["wheat", "gram", "lentil", "mustard", "barley"]
+    }
+
+    st.markdown("🌾 **Other Suggested Crops for this Season:**")
+    for s_crop in seasonal_crop_map.get(season, []):
+        st.write(f"- {s_crop.capitalize()}")
+
+    st.markdown("---")
+    st.info("🚧 More features coming soon: weather auto-fill, image-based crop classifier, and downloadable reports!")
+
+# Footer
+st.markdown("---")
+st.caption("🔬 Built with ❤️ using Streamlit, Scikit-learn & XGBoost")

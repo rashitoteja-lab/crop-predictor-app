@@ -1,71 +1,74 @@
 import streamlit as st
-import joblib
 import numpy as np
-from datetime import datetime
-from PIL import Image
-import base64
+import pandas as pd
+import joblib
 
-# Load the model and label encoder
+# Load model and encoder
 model = joblib.load("crop_model.pkl")
 label_encoder = joblib.load("crop_label_encoder.pkl")
 
-# Set page config
-st.set_page_config(
-    page_title="Crop Predictor",
-    page_icon="🌾",
-    layout="centered"
-)
+# Page config
+st.set_page_config(page_title="Crop Predictor 🌾", page_icon="🌱", layout="centered")
 
 # Hero image
-st.image(
-    "https://cdn.pixabay.com/photo/2016/11/21/12/53/rice-1845906_1280.jpg",
-    use_container_width=True
-)
+st.image("https://images.unsplash.com/photo-1568605114967-8130f3a36994", use_column_width=True, caption="Smart Farming for a Sustainable Future 🌱")
 
-# App Title
-st.title("🌾 Smart Crop Recommendation App")
-
-st.markdown("""
-Welcome to your smart farming assistant!  
-This tool helps you choose the **best crop to grow** based on:
-- Soil nutrients (N, P, K)
-- Temperature
-- Humidity
-- pH level
-- Rainfall
-- 🌦 Season (for multiple suggestions)
-""")
+# Title and intro
+st.title("🌾 Crop Recommendation App")
+st.markdown("Enter your soil and climate parameters to get the best crop recommendation for your conditions.")
 
 st.markdown("---")
 
-# User inputs
-col1, col2 = st.columns(2)
+# Sidebar inputs
+st.sidebar.header("🧪 Soil & Climate Inputs")
 
-with col1:
-    N = st.number_input("Nitrogen (N)", 0, 140, value=60)
-    P = st.number_input("Phosphorus (P)", 5, 145, value=60)
-    K = st.number_input("Potassium (K)", 5, 205, value=60)
-    ph = st.number_input("Soil pH", 3.5, 9.5, value=6.5)
+N = st.sidebar.slider("Nitrogen (N)", 0, 140, 70)
+P = st.sidebar.slider("Phosphorus (P)", 5, 145, 60)
+K = st.sidebar.slider("Potassium (K)", 5, 205, 60)
+temperature = st.sidebar.slider("Temperature (°C)", 10.0, 50.0, 25.0)
+humidity = st.sidebar.slider("Humidity (%)", 10.0, 100.0, 60.0)
+ph = st.sidebar.slider("Soil pH", 3.0, 10.0, 6.5)
+rainfall = st.sidebar.slider("Rainfall (mm)", 20.0, 300.0, 100.0)
+season = st.sidebar.selectbox("🌤️ Season", ["Spring", "Summer", "Monsoon", "Autumn", "Winter"])
 
-with col2:
-    temperature = st.number_input("Temperature (°C)", 10.0, 50.0, value=25.0)
-    humidity = st.number_input("Humidity (%)", 10.0, 100.0, value=70.0)
-    rainfall = st.number_input("Rainfall (mm)", 20.0, 300.0, value=100.0)
+# Visual: Nutrient levels
+st.subheader("🌱 Nutrient Levels (NPK)")
+npk_df = pd.DataFrame({
+    'Nutrient': ['Nitrogen', 'Phosphorus', 'Potassium'],
+    'Level': [N, P, K]
+})
+st.bar_chart(npk_df.set_index('Nutrient'))
 
-season = st.selectbox("🌦 Current Season", ["Spring", "Summer", "Monsoon", "Autumn", "Winter"])
+# Info section
+with st.expander("ℹ️ What do these values mean?"):
+    st.write("""
+    - **Nitrogen (N):** Helps plants grow fast, increases seed and fruit production.
+    - **Phosphorus (P):** Stimulates root development and flowering.
+    - **Potassium (K):** Enhances drought resistance and disease tolerance.
+    - **Temperature & Humidity:** Environmental conditions for crop suitability.
+    - **pH:** Indicates acidity or alkalinity of soil.
+    - **Rainfall:** Annual rainfall in your region (in mm).
+    """)
 
 st.markdown("---")
 
-# Predict button
-if st.button("🔍 Predict Best Crops"):
-
-    # Make prediction
+# Prediction logic
+if st.button("🚀 Predict Crop"):
     features = np.array([[N, P, K, temperature, humidity, ph, rainfall]])
     prediction = model.predict(features)
-    crop = label_encoder.inverse_transform(prediction)[0]
+    crop_name = label_encoder.inverse_transform(prediction)[0].capitalize()
 
-    # Show top recommendation
-    st.success(f"🌱 **Top Recommended Crop: {crop.capitalize()}**")
+    emoji_dict = {
+        "rice": "🍚", "maize": "🌽", "chickpea": "🧆", "kidneybeans": "🥫",
+        "pigeonpeas": "🥟", "mothbeans": "🫘", "mungbean": "🌱", "blackgram": "⚫",
+        "lentil": "🥣", "pomegranate": "🍎", "banana": "🍌", "mango": "🥭",
+        "grapes": "🍇", "watermelon": "🍉", "muskmelon": "🍈", "apple": "🍏",
+        "orange": "🍊", "papaya": "🍍", "coconut": "🥥", "cotton": "🧵",
+        "jute": "🧶", "coffee": "☕"
+    }
+    emoji = emoji_dict.get(crop_name.lower(), "🌾")
+    st.success(f"✅ Recommended Crop: **{crop_name}** {emoji}")
+    st.balloons()
 
     # Season-based suggestions
     seasonal_crop_map = {
@@ -76,13 +79,18 @@ if st.button("🔍 Predict Best Crops"):
         "Winter": ["wheat", "gram", "lentil", "mustard", "barley"]
     }
 
-    st.markdown("🌾 **Other Suggested Crops for this Season:**")
-    for s_crop in seasonal_crop_map.get(season, []):
-        st.write(f"- {s_crop.capitalize()}")
-
-    st.markdown("---")
-    st.info("🚧 More features coming soon: weather auto-fill, image-based crop classifier, and downloadable reports!")
+    st.subheader(f"📅 Other Crops You Can Grow in {season}")
+    crops = seasonal_crop_map.get(season, [])
+    if crops:
+        st.markdown(", ".join([f"**{crop.capitalize()}**" for crop in crops]))
+    else:
+        st.warning("No suggestions available for this season.")
+else:
+    st.info("⬅️ Use the sidebar sliders to enter your values, then hit **Predict Crop**!")
 
 # Footer
 st.markdown("---")
-st.caption("🔬 Built with ❤️ using Streamlit, Scikit-learn & XGBoost")
+st.markdown(
+    "<center><small>🌿 Built with ❤️ using Streamlit by <a href='https://github.com/rashitoteja-lab'>rashitoteja-lab</a></small></center>",
+    unsafe_allow_html=True
+)

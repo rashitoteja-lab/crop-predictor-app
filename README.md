@@ -18,7 +18,7 @@ Output:
 
 ## 🚀 Live Demo
 
-👉 [Open in Streamlit](https://crop-predictor-app-ctrzxyttculdrhja5rv5ho.streamlit.app/) *(replace with your actual link after deploy)*
+👉 [Open in Streamlit](https://crop-predictor-app-ctrzxyttculdrhja5rv5ho.streamlit.app/) 
 
 ## 🛠️ Tech Stack
 

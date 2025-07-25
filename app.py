@@ -11,7 +11,7 @@ label_encoder = joblib.load("crop_label_encoder.pkl")
 st.set_page_config(page_title="Crop Predictor 🌾", page_icon="🌱", layout="centered")
 
 # Hero image
-st.image("https://images.unsplash.com/photo-1568605114967-8130f3a36994", use_column_width=True, caption="Smart Farming for a Sustainable Future 🌱")
+st.image("https://images.unsplash.com/photo-1568605114967-8130f3a36994", use_container_width=True, caption="Smart Farming for a Sustainable Future 🌱")
 
 # Title and intro
 st.title("🌾 Crop Recommendation App")
